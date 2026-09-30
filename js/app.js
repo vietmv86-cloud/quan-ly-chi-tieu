@@ -1,3 +1,12 @@
+// Kết nối Supabase
+const db = supabaseClient;
+console.log('Supabase đã nạp:', !!db);
+db.from('user_data')
+  .select('user_id')
+  .limit(1)
+  .then(({ data, error }) => {
+    console.log('Kiểm tra Supabase:', { data, error });
+  });
 const PAL=['#e5626b','#f0a04b','#e8c547','#5fb37c','#4fb0c6','#7b8fe0','#b57edc','#e58bb1'];
 const uid=()=>Math.random().toString(36).slice(2,9);
 function DEF(){let i=0;const m=(ty,ic,n,s)=>({id:uid(),ty,ic,name:n,co:PAL[i++%8],subs:s.map(x=>({id:uid(),name:x}))});return[
@@ -17,7 +26,17 @@ const AK='vd_auto';
 const autos=()=>{try{return JSON.parse(localStorage.getItem(AK)||'{}')}catch(e){return{}}};
 function snap(){try{const A=autos();A[today()]=JSON.stringify(S);Object.keys(A).sort().slice(0,-14).forEach(k=>delete A[k]);localStorage.setItem(AK,JSON.stringify(A))}catch(e){}}
 const persist=()=>{try{localStorage.setItem('vd_v1',JSON.stringify(S))}catch(e){}};
-let CT=0;const save=()=>{persist();snap();if(S.cloudAuto){clearTimeout(CT);CT=setTimeout(()=>cloudSave(true),5000)}};
+let CT=0;
+const save=()=>{
+  persist();
+  snap();
+  saveToCloud();
+};
+let ST=0;
+const saveToCloud=()=>{
+  clearTimeout(ST);
+  ST=setTimeout(()=>saveToSupabase(),1000);
+};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Math.round(n).toLocaleString('vi-VN')+'đ';
 const pad=n=>String(n).padStart(2,'0');
@@ -147,6 +166,41 @@ for(let m=1;m<=12;m++)h+=dayRow('Tháng '+m,a.filter(t=>t.d.startsWith(ry+'-'+pa
 return h+'</div>'+(a.length?bd(a,'chi')+bd(a,'thu'):'<div class="empty">Năm này chưa có khoản nào 🌷</div>')}
 const a=mtx();return h+mbar()+totals(a)+cmp(a)+bd(a,'chi')+bd(a,'thu')+tipsCard(a)}
 
+/* ---- Đăng nhập Supabase ---- */
+async function supaLogin(email, password) {
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    toast('Đăng nhập thất bại: ' + error.message);
+    return false;
+  }
+
+  console.log('Đăng nhập Supabase thành công:', data.user.email);
+  toast('Đăng nhập thành công 💖');
+  return true;
+}
+
+async function supaLogout() {
+  const { error } = await db.auth.signOut();
+
+  if (error) {
+    toast('Đăng xuất thất bại: ' + error.message);
+    return;
+  }
+
+  toast('Đã đăng xuất');
+  render();
+}
+
+async function supaCurrentUser() {
+  const { data, error } = await db.auth.getUser();
+
+  if (error) return null;
+  return data.user || null;
+}
 /* ---- Sao lưu ---- */
 const getCode=()=>JSON.stringify({app:'chi-tieu-gia-dinh',at:new Date().toISOString(),data:S});
 function bak(){const A=autos(),ks=Object.keys(A).sort().reverse();
@@ -217,4 +271,27 @@ const V={in:inp,led,rep,mng,bak};
 $app.innerHTML='<h1>CHI TIÊU GIA ĐÌNH</h1><p class="sub">🌸 Ghi chép mỗi ngày, cả nhà ấm no 🌸</p>'+V[tab]();
 $tb.innerHTML=[['led','📒','Sổ'],['rep','📊','Báo cáo'],['in','+',''],['mng','🏷️','Mục'],['bak','💾','Sao lưu']].map(([k,i,n])=>k=='in'?`<button class="plus ${tab=='in'?'on':''}" aria-label="Thêm khoản mới" onclick="tab='in';render();scrollTo(0,0)">+</button>`:`<button class="${tab==k?'on':''}" onclick="tab='${k}';render();scrollTo(0,0)"><b>${i}</b>${n}</button>`).join('')}
 const $app=document.getElementById('app'),$tb=document.getElementById('tb');
-migrate();save();render();snap();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+async function boot(){
+  migrate();
+
+  const user = await getCurrentUser();
+
+  if (user) {
+    await loadFromSupabase();
+  }
+
+  render();
+
+  if (!user) {
+    document.body.insertAdjacentHTML('afterbegin', loginBox());
+  }
+
+  snap();
+
+  try{
+    navigator.storage&&navigator.storage.persist&&navigator.storage.persist()
+  }catch(e){}
+}
+
+boot();
