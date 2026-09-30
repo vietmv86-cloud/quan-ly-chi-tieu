@@ -14,6 +14,7 @@ async function loginUser(email, password) {
 
   console.log('Đã đăng nhập:', data.user.email);
   toast('Đăng nhập thành công 💖');
+  await loadFromSupabase();
   render();
 }
 
