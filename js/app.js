@@ -300,8 +300,17 @@ async function boot(){
   render();
 
   if (navigator.onLine) {
-    await loadFromSupabase();
-    render();
+    try{
+      if(localStorage.getItem('vd_pending_sync') === '1'){
+        console.log('Có dữ liệu local đang chờ đồng bộ, sẽ đồng bộ lên cloud');
+        setTimeout(()=>saveToSupabase(),3000);
+      }else{
+        await loadFromSupabase();
+        render();
+      }
+    }catch(e){
+      console.error('Lỗi đồng bộ khi khởi động:', e);
+    }
   }
 
   snap();
