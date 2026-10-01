@@ -36,7 +36,7 @@ async function logoutUser() {
   persist();
 
   toast('Đã đăng xuất');
-  render();
+  
 
   document.body.insertAdjacentHTML('afterbegin', loginBox());
 }
