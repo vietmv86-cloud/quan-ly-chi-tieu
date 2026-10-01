@@ -277,15 +277,14 @@ async function boot(){
 
   const user = await getCurrentUser();
 
-  if (user) {
-    await loadFromSupabase();
-  }
-
-  render();
-
   if (!user) {
     document.body.insertAdjacentHTML('afterbegin', loginBox());
+    return;
   }
+
+  await loadFromSupabase();
+
+  render();
 
   snap();
 
