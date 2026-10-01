@@ -27,8 +27,18 @@ async function logoutUser() {
     return;
   }
 
+  S = {
+    cats: DEF(),
+    txs: [],
+    v2: 1
+  };
+
+  persist();
+
   toast('Đã đăng xuất');
   render();
+
+  document.body.insertAdjacentHTML('afterbegin', loginBox());
 }
 
 async function getCurrentUser() {
