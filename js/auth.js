@@ -42,14 +42,14 @@ async function logoutUser() {
 }
 
 async function getCurrentUser() {
-  const { data, error } = await db.auth.getUser();
+  const { data, error } = await db.auth.getSession();
 
   if (error) {
-    console.error('Không lấy được user:', error);
+    console.error('Không lấy được session:', error);
     return null;
   }
 
-  return data.user;
+  return data.session?.user || null;
 }
 function loginBox() {
   return `
