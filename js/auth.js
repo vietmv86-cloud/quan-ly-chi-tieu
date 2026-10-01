@@ -100,11 +100,15 @@ async function saveToSupabase() {
 
   if (error) {
     console.error('Lỗi lưu Supabase:', error);
-    toast('Không lưu được dữ liệu lên cloud');
     return false;
   }
 
-  console.log('Đã lưu dữ liệu lên Supabase');
+   console.log('Đã lưu dữ liệu lên Supabase');
+
+  try{
+    localStorage.removeItem('vd_pending_sync');
+  }catch(e){}
+
   return true;
 }
 async function loadFromSupabase() {
@@ -114,6 +118,13 @@ async function loadFromSupabase() {
     console.log('Chưa đăng nhập');
     return false;
   }
+
+  try{
+    if(localStorage.getItem('vd_pending_sync') === '1'){
+      console.log('Có dữ liệu local đang chờ đồng bộ, không tải cloud');
+      return false;
+    }
+  }catch(e){}
 
   const { data, error } = await db
     .from('user_data')

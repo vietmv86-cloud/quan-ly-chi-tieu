@@ -30,13 +30,24 @@ let CT=0;
 const save=()=>{
   persist();
   snap();
+
+  try{
+    localStorage.setItem('vd_pending_sync','1');
+  }catch(e){}
+
   saveToCloud();
 };
 let ST=0;
 const saveToCloud=()=>{
   clearTimeout(ST);
+
+  if (!navigator.onLine) return;
+
   ST=setTimeout(()=>saveToSupabase(),1000);
 };
+window.addEventListener('online',()=>{
+  saveToSupabase(),3000;
+});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Math.round(n).toLocaleString('vi-VN')+'đ';
 const pad=n=>String(n).padStart(2,'0');
@@ -286,9 +297,12 @@ async function boot(){
     return;
   }
 
-  await loadFromSupabase();
-
   render();
+
+  if (navigator.onLine) {
+    await loadFromSupabase();
+    render();
+  }
 
   snap();
 
