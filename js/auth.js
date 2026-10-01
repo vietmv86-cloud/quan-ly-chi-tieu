@@ -15,7 +15,7 @@ async function loginUser(email, password) {
   console.log('Đã đăng nhập:', data.user.email);
   toast('Đăng nhập thành công 💖');
   await loadFromSupabase();
-  render();
+ window.location.reload();
 }
 
 async function logoutUser() {
@@ -36,7 +36,7 @@ async function logoutUser() {
   persist();
 
   toast('Đã đăng xuất');
-  
+  window.location.reload();
 
   document.body.insertAdjacentHTML('afterbegin', loginBox());
 }
