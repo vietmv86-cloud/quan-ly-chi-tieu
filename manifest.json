@@ -1,5 +1,6 @@
 {
   "name": "CHI TIÊU GIA ĐÌNH",
+  "id": "/quan-ly-chi-tieu/index.html",
   "short_name": "Chi tiêu",
   "description": "Sổ ghi thu chi gia đình mỗi ngày",
   "start_url": "./index.html",
